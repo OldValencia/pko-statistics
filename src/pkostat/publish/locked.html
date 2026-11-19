@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>PkoStat</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f5f1; --card: #fff; --ink: #1d1d1b; --ink-2: #6b6a64; --line: #dedcd4; --accent: #2a5db0; --bad: #b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161615; --card: #20201e; --ink: #ecebe6; --ink-2: #a3a29b; --line: #3a3935; --accent: #8fb3ff; --bad: #ff8a80; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  form { width: min(360px, calc(100vw - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-sizing: border-box; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  p { margin: 0 0 16px; color: var(--ink-2); font-size: 14px; }
+  input, button { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border-radius: 8px; }
+  input { border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin-bottom: 12px; }
+  button { border: 0; background: var(--accent); color: var(--card); font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; }
+  #error { color: var(--bad); margin: 12px 0 0; min-height: 1em; }
+</style>
+</head>
+<body>
+<form id="unlock" hidden>
+  <h1>Отчёт PkoStat</h1>
+  <p>Отчёт зашифрован. Открой его по ссылке с паролем или введи пароль.</p>
+  <input id="password" type="password" autocomplete="current-password" placeholder="Пароль" required>
+  <button id="open" type="submit">Открыть</button>
+  <p id="error" role="alert"></p>
+</form>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+"use strict";
+// Decrypts the report on this device: PBKDF2-SHA256 -> AES-256-GCM -> gzip (see publish/crypto.py).
+const P = JSON.parse(document.getElementById("payload").textContent);
+const STORE = "pkostat:" + location.pathname;
+const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const store = { get() { try { return localStorage.getItem(STORE); } catch (e) { return null; } },
+  set(v) { try { v ? localStorage.setItem(STORE, v) : localStorage.removeItem(STORE); } catch (e) { /* private mode */ } } };
+
+async function unlock(password) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: bytes(P.salt), iterations: P.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const zipped = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(P.iv) }, key, bytes(P.data));
+  const stream = new Blob([zipped]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).text();
+}
+
+async function attempt(password, fromForm) {
+  const button = document.getElementById("open"), error = document.getElementById("error");
+  button.disabled = true;
+  error.textContent = "";
+  try {
+    const html = await unlock(password);
+    store.set(password);
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    store.set(null);
+    document.getElementById("unlock").hidden = false;
+    error.textContent = !window.crypto || !crypto.subtle || !window.DecompressionStream
+      ? "Браузер слишком старый: обнови iOS или открой в другом браузере."
+      : fromForm ? "Пароль не подходит." : "Ссылка устарела: попроси новую.";
+    button.disabled = false;
+  }
+}
+
+const fromLink = new URLSearchParams(location.hash.slice(1)).get("k");
+if (fromLink) history.replaceState(null, "", location.pathname + location.search);
+const known = fromLink || store.get();
+document.getElementById("unlock").onsubmit = e => { e.preventDefault(); attempt(document.getElementById("password").value, true); };
+if (known) attempt(known, false); else document.getElementById("unlock").hidden = false;
+</script>
+</body>
+</html>

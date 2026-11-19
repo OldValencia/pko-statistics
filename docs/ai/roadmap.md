@@ -67,7 +67,7 @@ See architecture §11.
       a fixed header); `name` never changes, so rules keep working.
 - [x] Data page: CSV upload, Sync, Rebuild, import history, status counts.
 - [x] Users page: add, display name, show/copy/rotate token.
-- [ ] Share link per user (`share_id`) — with publishing, stage 9.
+- [x] Share link per user (`share_id`) — with publishing, stage 9.
 - [ ] Rule files: packaged default merchant rules still reach the user only through `init`
       (the copied `rules.toml` does not get new defaults). Revisit if it starts to hurt.
 - [x] Russian UI: category `label` (Russian) next to the stable `name`, plural helper, no gendered
@@ -131,6 +131,10 @@ shows the same numbers as `analytics` in tests.
       (the PC must be on at that time; Ollama must be running for the LLM steps).
 
 ## Stage 9. Report in the cloud
-- [ ] Publish each user's read-only HTML to Cloudflare at `/r/<share-id>` (architecture §16);
-      `share_id` separate from the push token, rotatable.
-- [ ] "Publish" button on the Data page (and `pkostat publish --user U` for automation).
+- [x] Publish each shared user's read-only HTML, encrypted, to GitHub Pages of this repository
+      (`gh-pages`, one fresh commit per publish) at `<site>/<share_id>/` (architecture §16).
+      Random `share_id` and password per user (migration 008), separate from the push token.
+- [x] Users page: open access, copy link (password in the fragment), new link, close; "Опубликовать
+      сейчас". `pkostat user share NAME [--off]`, `pkostat publish [--force]`; a step of `run`.
+- [x] Push only on change (`publish-state.json`); `run-publish.bat` for Task Scheduler every 2 h:
+      `schtasks /Create /TN "PkoStat publish" /SC HOURLY /MO 2 /TR "\"D:\Projects\pkostatistics\run-publish.bat\""`

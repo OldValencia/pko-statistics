@@ -1,5 +1,6 @@
 .idea
 *.iml
+out/
 .venv
 __pycache__/
 .pytest_cache/

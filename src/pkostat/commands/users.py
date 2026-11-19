@@ -7,6 +7,7 @@ from pkostat.config import load_settings
 from pkostat.db.notifications import notification_counts_by_user
 from pkostat.db.users import list_users
 from pkostat.home import init_home, open_database
+from pkostat.publish.sharing import close_share, open_share, share_link
 from pkostat.users import add_user, rotate_token, set_display_name
 
 
@@ -62,4 +63,19 @@ def cmd_user_rotate(args: argparse.Namespace) -> int:
         user = rotate_token(conn, args.name)
     print(f"New token for '{user.name}': {user.token}")
     print("Update the iOS Shortcut: pushes with the old token will be rejected from now on.")
+    return 0
+
+
+def cmd_user_share(args: argparse.Namespace) -> int:
+    settings = load_settings()
+    with closing(open_database(settings)) as conn:
+        if args.off:
+            user = close_share(conn, args.name)
+            print(f"'{user.name}': report no longer shared; it disappears on the next publish.")
+            return 0
+        user = open_share(conn, args.name)
+    link = share_link(settings, user)
+    print(f"New link for '{user.name}' (the old one stops working on the next publish):")
+    print(f"    {link or 'set PKOSTAT_PUBLISH_REMOTE (or PKOSTAT_PUBLISH_URL) in .env first'}")
+    print("Run `pkostat publish` to put it online.")
     return 0

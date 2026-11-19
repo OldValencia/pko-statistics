@@ -31,7 +31,8 @@ Stage 6 done and narrowed after measuring: the local LLM only suggests categorie
 merchants (owner confirms); month summary and advice are built by code (`analytics/story.py`). Stage 7 done: per-user saving goal
 and category limits edited in the app, shown in the report. Stage 8 done: `pkostat run` /
 "Обновить всё", backups (`pkostat backup|restore`, daily on app start), `run-daily.bat` for Task
-Scheduler. Next: stage 9 (publishing the read-only user report to Cloudflare).
+Scheduler. Stage 9 done: shared users' reports are published encrypted to GitHub Pages (`gh-pages`
+of this public repository; `pkostat publish`, `run-publish.bat`). Everything on the roadmap is done.
 
 ## Commands
 
@@ -42,6 +43,7 @@ uv run pkostat init          # create ~/pkostatistics, .env template, configs, d
 uv run pkostat              # the admin website on http://127.0.0.1:8765 (or run.bat)
 uv run pkostat run          # everything: sync, rebuild, LLM, reports, backup (run-daily.bat)
 uv run pkostat report --user jane --open   # read-only report HTML
+uv run pkostat publish       # encrypted reports to GitHub Pages, only if something changed
 uv run pytest                # tests
 uv run ruff format && uv run ruff check --fix
 ollama list                  # gpt-oss:20b must be present

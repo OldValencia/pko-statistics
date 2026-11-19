@@ -1,11 +1,14 @@
 """`run`, `backup` and `restore` commands."""
 
 import argparse
+from contextlib import closing
 from pathlib import Path
 
 from pkostat.backup import create_backup, list_backups, restore_backup
 from pkostat.config import load_settings
+from pkostat.home import open_database
 from pkostat.pipeline import run_all
+from pkostat.publish.service import publish_reports
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -13,6 +16,17 @@ def cmd_run(args: argparse.Namespace) -> int:
     for step in steps:
         print(f"[{'ok' if step.ok else 'FAIL'}] {step.name}: {step.message}")
     return 0 if all(step.ok for step in steps) else 1
+
+
+def cmd_publish(args: argparse.Namespace) -> int:
+    settings = load_settings()
+    with closing(open_database(settings)) as conn:
+        result = publish_reports(conn, settings, force=args.force)
+    if not result.changed:
+        print(f"Nothing changed since {result.published_at}; not pushed (use --force).")
+    else:
+        print(f"Published {result.reports} report(s) at {result.published_at}.")
+    return 0
 
 
 def cmd_backup(args: argparse.Namespace) -> int:

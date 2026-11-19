@@ -12,8 +12,9 @@ file is *how you work*. Code style lives in `python.md`; where it disagrees with
   from the LLM response.
 - **LLM output only through a pydantic schema** (`format` in Ollama + `model_validate_json`). No regex
   parsing of free text.
-- **Bank data never leaves the PC.** The only network flow carrying data is reading/deleting from the
-  Supabase buffer. LLM — only Ollama on `localhost`. No cloud APIs, no telemetry, no CDNs in the report.
+- **Bank data never leaves the PC unencrypted.** Network flows carrying data: reading/deleting from
+  the Supabase buffer, and publishing the user report **encrypted on this PC** (stage 9, architecture
+  §16). LLM — only Ollama on `localhost`. No cloud APIs, no telemetry, no CDNs in the report.
 - **Raw input is immutable.** Code never updates or deletes `raw_notifications` and `csv_rows`.
   Everything derived (`transactions`) must be rebuildable by `rebuild` without loss.
 - **Real data stays out of git.** Tests and fixtures use anonymised data only (replace names, account

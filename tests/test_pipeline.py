@@ -34,6 +34,7 @@ def test_failed_steps_do_not_stop_the_rest(ready: Path, monkeypatch: pytest.Monk
         "Пересборка": True,
         "LLM: подсказки категорий": False,
         "Отчёты": True,
+        "Публикация": True,  # skipped: not configured
         "Резервная копия": True,
     }
     assert "пропущено" in steps[0].message

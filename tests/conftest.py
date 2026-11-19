@@ -19,8 +19,10 @@ def db() -> Iterator[sqlite3.Connection]:
 
 @pytest.fixture
 def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """An empty PKOSTAT_HOME; Supabase settings from the real environment are hidden."""
+    """An empty PKOSTAT_HOME; Supabase and publish settings from the real environment are hidden."""
     monkeypatch.setenv("PKOSTAT_HOME", str(tmp_path))
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("PKOSTAT_PUBLISH_REMOTE", raising=False)
+    monkeypatch.delenv("PKOSTAT_PUBLISH_URL", raising=False)
     return tmp_path

@@ -85,9 +85,17 @@ function usersHtml() {
   const rows = ADMIN.users.map(u => `<tr data-user="${esc(u.name)}"><td>${esc(u.name)}<span class="small">уведомлений: ${u.notifications}</span></td>
     <td><input data-f="display" value="${esc(u.display_name || "")}" placeholder="${esc(u.name)}" maxlength="64"> <button data-act="save-user">Сохранить</button></td>
     <td><code class="token" data-token="${esc(u.token)}">••••••••</code> <button data-act="show-token">Показать</button> <button data-act="copy-token">Копировать</button>
-      <button data-act="rotate">Перевыпустить</button></td></tr>`).join("");
+      <button data-act="rotate">Перевыпустить</button></td>
+    <td>${u.share_link ? `<button data-act="copy-link" data-link="${esc(u.share_link)}">Копировать ссылку</button> <button data-act="share">Новая ссылка</button> <button data-act="unshare">Закрыть</button>`
+      : u.shared ? `<button data-act="unshare">Закрыть</button>` : `<button data-act="share">Открыть доступ</button>`}</td></tr>`).join("");
+  const pub = ADMIN.publish;
   return `<p class="hint">Токен — это token_id в iOS Shortcut. Перевыпуск: старый токен перестанет приниматься, Shortcut нужно обновить.</p>
-    <div class="table-scroll"><table class="edit"><thead><tr><th>Имя</th><th>Отображаемое имя</th><th>Токен</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="table-scroll"><table class="edit"><thead><tr><th>Имя</th><th>Отображаемое имя</th><th>Токен</th><th>Отчёт по ссылке</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <h2 style="margin-top:24px">Публикация</h2>
+    <p class="hint">${pub.configured
+      ? `Отчёты с открытым доступом публикуются зашифрованными на GitHub Pages: в «Обновить всё», в ежедневном запуске и этой кнопкой. Пароль — в самой ссылке, после первого открытия телефон его запоминает. ${pub.published_at ? "Последняя публикация: " + pub.published_at.replace("T", " ").slice(0, 16) + "." : "Ещё не публиковалось."}`
+      : "Публикация выключена: укажи PKOSTAT_PUBLISH_REMOTE в .env (репозиторий для ветки gh-pages) и перезапусти приложение."}</p>
+    <div class="filters"><button data-act="publish"${pub.configured ? "" : " disabled"}>Опубликовать сейчас</button></div>
     <h2 style="margin-top:24px">Новый пользователь</h2>
     <div class="filters" id="newUser"><input data-f="name" placeholder="имя латиницей, напр. anna" maxlength="32"><input data-f="display" placeholder="Отображаемое имя" maxlength="64">
       <input data-f="token" placeholder="Свой токен (необязательно)"><button data-act="add-user">Добавить</button></div>`;
@@ -126,6 +134,10 @@ function adminClick(e, body) {
     "rotate": () => confirmTwice(b, () => act(api(`/api/users/${encodeURIComponent(row.dataset.user)}/rotate`), b)),
     "show-token": () => { const t = row.querySelector(".token"); t.textContent = t.textContent.startsWith("•") ? t.dataset.token : "••••••••"; },
     "copy-token": () => navigator.clipboard.writeText(row.querySelector(".token").dataset.token).then(() => toast("Токен скопирован.")),
+    "share": () => confirmTwice(b, () => act(api(`/api/users/${encodeURIComponent(row.dataset.user)}/share`), b)),
+    "unshare": () => confirmTwice(b, () => act(api(`/api/users/${encodeURIComponent(row.dataset.user)}/share/delete`), b)),
+    "copy-link": () => navigator.clipboard.writeText(b.dataset.link).then(() => toast("Ссылка скопирована: в ней и адрес, и пароль.")),
+    "publish": () => act(api("/api/publish"), b),
     "add-user": () => { const box = byId("newUser"), v = n => box.querySelector(`[data-f="${n}"]`).value.trim(); act(api("/api/users", { name: v("name"), display_name: v("display") || null, token: v("token") || null }), b); },
   };
   actions[b.dataset.act]();

@@ -19,6 +19,7 @@ from pkostat.ingest.supabase import SupabaseInbox
 from pkostat.ingest.sync import sync_inbox
 from pkostat.llm.merchants import suggest_categories
 from pkostat.llm.ollama import OllamaClient
+from pkostat.publish.service import publish_reports
 from pkostat.rebuild import rebuild
 from pkostat.report.render import render_report
 from pkostat.report_service import report_data_for
@@ -42,6 +43,7 @@ def run_all(settings: Settings, use_llm: bool = True) -> list[Step]:
         if use_llm:
             _step(steps, "LLM: подсказки категорий", lambda: _suggest(conn, settings))
         _step(steps, "Отчёты", lambda: _reports(conn, settings))
+        _step(steps, "Публикация", lambda: publish_message(conn, settings))
     finally:
         conn.close()
     _step(steps, "Резервная копия", lambda: f"{create_backup(settings).name}")
@@ -79,6 +81,15 @@ def _suggest(conn: sqlite3.Connection, settings: Settings) -> str:
     if not result.asked:
         return "новых мерчантов нет"
     return f"подсказок {result.confident + result.unsure}, подтверди их на странице «Без категории»"
+
+
+def publish_message(conn: sqlite3.Connection, settings: Settings) -> str:
+    if not settings.publish_remote:
+        return "пропущено: публикация не настроена"
+    result = publish_reports(conn, settings)
+    if not result.reports:
+        return "ни у кого не открыт доступ по ссылке" + (", сайт очищен" if result.changed else "")
+    return f"опубликовано отчётов: {result.reports}" if result.changed else "без изменений"
 
 
 def _reports(conn: sqlite3.Connection, settings: Settings) -> str:

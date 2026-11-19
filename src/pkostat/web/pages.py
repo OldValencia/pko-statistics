@@ -13,6 +13,8 @@ from pkostat.db.statements import list_imports
 from pkostat.db.suggestions import list_suggestions
 from pkostat.db.transactions import category_usage, status_counts, unparsed_notifications
 from pkostat.db.users import User, list_users
+from pkostat.publish.service import last_publish
+from pkostat.publish.sharing import share_link
 from pkostat.report.render import render_report
 from pkostat.report_service import report_data_for
 from pkostat.web.context import category_blockers
@@ -45,6 +47,8 @@ def _admin_payload(
                 "display_name": u.display_name,
                 "token": u.token,
                 "notifications": notifications.get(u.id, 0),
+                "share_link": share_link(settings, u),
+                "shared": bool(u.share_id),
             }
             for u in users
         ],
@@ -89,6 +93,10 @@ def _admin_payload(
             for b in list_backups(settings)[:10]
         ],
         "backups_dir": str(settings.backups_dir),
+        "publish": {
+            "configured": bool(settings.publish_remote),
+            "published_at": last_publish(settings).get("published_at"),
+        },
     }
 
 

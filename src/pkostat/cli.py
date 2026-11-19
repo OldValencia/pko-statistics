@@ -59,9 +59,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     _add_category_commands(sub.add_parser("category", help="categories and merchant rules"))
 
-    run_cmd = sub.add_parser("run", help="everything: sync, rebuild, LLM, reports, backup")
+    run_cmd = sub.add_parser("run", help="everything: sync, rebuild, LLM, reports, publish, backup")
     run_cmd.add_argument("--no-llm", action="store_true", help="skip the local LLM steps")
     run_cmd.set_defaults(handler=maintenance.cmd_run)
+
+    publish = sub.add_parser("publish", help="push encrypted read-only reports to GitHub Pages")
+    publish.add_argument("--force", action="store_true", help="push even if nothing changed")
+    publish.set_defaults(handler=maintenance.cmd_publish)
 
     backup_cmd = sub.add_parser("backup", help="back up the database and config files")
     backup_cmd.add_argument("--list", action="store_true", help="list existing backups")
@@ -129,3 +133,8 @@ def _add_user_commands(user: argparse.ArgumentParser) -> None:
     rotate = sub.add_parser("rotate", help="replace a user's token")
     rotate.add_argument("name")
     rotate.set_defaults(handler=users.cmd_user_rotate)
+
+    share = sub.add_parser("share", help="new link to the user's published report")
+    share.add_argument("name")
+    share.add_argument("--off", action="store_true", help="stop publishing the user's report")
+    share.set_defaults(handler=users.cmd_user_share)

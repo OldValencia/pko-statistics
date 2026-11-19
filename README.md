@@ -79,6 +79,10 @@ OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=gpt-oss:20b
 # Optional: keep backups outside the data folder, e.g. in a cloud-synced folder.
 PKOSTAT_BACKUP_DIR=
+# Optional: publish encrypted read-only reports to GitHub Pages (see "Sharing a report").
+PKOSTAT_PUBLISH_REMOTE=git@github.com:<owner>/<repo>.git
+# Empty = https://<owner>.github.io/<repo>
+PKOSTAT_PUBLISH_URL=
 ```
 
 Environment variables with the same names override the file.
@@ -145,6 +149,7 @@ The app imports statements, syncs pushes, edits categories, limits and goals, an
 pkostat [serve] [--port N] [--no-browser]   the local app (default command)
 pkostat init                                 create the data folder, .env template, configs, database
 pkostat user add|list|rotate|display-name    users and tokens
+pkostat user share NAME [--off]              new link to the user's published report
 pkostat sync                                 move notifications from Supabase into the database
 pkostat import-csv FILE --user U             import an iPKO CSV statement
 pkostat rebuild [--user U]                   rebuild transactions from stored raw data
@@ -152,7 +157,8 @@ pkostat category list|set|unset              categories and per-merchant rules
 pkostat uncategorized [--user U]             merchants without a category
 pkostat categorize [--user U]                LLM suggests categories (confirm in the app)
 pkostat report --user U [--open]             read-only report HTML
-pkostat run [--no-llm]                       sync, rebuild, LLM, reports, backup
+pkostat run [--no-llm]                       sync, rebuild, LLM, reports, publish, backup
+pkostat publish [--force]                    push encrypted reports, only if something changed
 pkostat backup [--list]                      back up the database and config files
 pkostat restore FILE                         restore a backup (close the app first)
 ```
@@ -169,10 +175,36 @@ schtasks /Create /TN "PkoStat daily" /SC DAILY /ST 21:00 /TR "\"D:\Projects\pkos
 
 The PC must be on at that time; Ollama must be running for the LLM step.
 
+## Sharing a report
+
+A user's read-only report can be published as a web page, for example to read it on a phone. It is
+published to GitHub Pages of this repository (branch `gh-pages`) and **encrypted on this PC**: the
+repository and the site are public, the page is not readable without the password.
+
+1. Set `PKOSTAT_PUBLISH_REMOTE` in `.env` (the repository to push `gh-pages` to; this PC's SSH key
+   must be able to push there) and restart the app.
+2. Users page → "Открыть доступ" for the user. This creates a random address and password and
+   publishes. Or: `uv run pkostat user share jane` then `uv run pkostat publish`.
+3. The first time, check the repository's Settings → Pages: source "Deploy from a branch",
+   `gh-pages`, `/ (root)`.
+4. "Копировать ссылку" and send it. The password is in the link after `#`: browsers never send that
+   part to the server. The phone remembers it after the first opening.
+
+"Новая ссылка" replaces the address and password (the old link stops working); "Закрыть" removes
+the page. Each publish replaces the whole `gh-pages` branch with one commit.
+
+To keep the page fresh every 2 hours (sync, rebuild, publish only if changed; log in
+`~/pkostatistics/logs/publish.log`):
+
+```powershell
+schtasks /Create /TN "PkoStat publish" /SC HOURLY /MO 2 /TR "\"D:\Projects\pkostatistics\run-publish.bat\""
+```
+
 ## Backups and recovery
 
 A backup is a zip with a consistent copy of the database plus `categories.toml` and `rules.toml`.
 It is made by `pkostat backup`, at the end of every `pkostat run`, and once a day when the app starts;
+it also holds the users' share links and passwords, so restored links keep working.
 the 30 newest are kept. **`.env` is never backed up** — keep the Supabase URL and secret key in a
 password manager.
 

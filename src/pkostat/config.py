@@ -22,6 +22,11 @@ OLLAMA_URL={DEFAULT_OLLAMA_URL}
 OLLAMA_MODEL={DEFAULT_OLLAMA_MODEL}
 # Where backups go (default: <data folder>/backups). A cloud-synced folder keeps them off this PC.
 PKOSTAT_BACKUP_DIR=
+# Publishing encrypted read-only reports to GitHub Pages: the repository to push the gh-pages
+# branch to (e.g. git@github.com:<owner>/<repo>.git). Empty = publishing is off.
+PKOSTAT_PUBLISH_REMOTE=
+# The site address; empty = derived from a GitHub remote (https://<owner>.github.io/<repo>).
+PKOSTAT_PUBLISH_URL=
 """
 
 
@@ -33,6 +38,8 @@ class Settings:
     ollama_url: str
     ollama_model: str
     backup_dir: Path | None = None  # PKOSTAT_BACKUP_DIR, e.g. a folder synced to a cloud drive
+    publish_remote: str | None = None  # PKOSTAT_PUBLISH_REMOTE: git remote for the gh-pages branch
+    publish_url: str | None = None  # PKOSTAT_PUBLISH_URL: the site address, if not derivable
 
     @property
     def env_path(self) -> Path:
@@ -70,6 +77,8 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
         ollama_url=_non_empty(values.get("OLLAMA_URL")) or DEFAULT_OLLAMA_URL,
         ollama_model=_non_empty(values.get("OLLAMA_MODEL")) or DEFAULT_OLLAMA_MODEL,
         backup_dir=_path(values.get("PKOSTAT_BACKUP_DIR")),
+        publish_remote=_non_empty(values.get("PKOSTAT_PUBLISH_REMOTE")),
+        publish_url=_non_empty(values.get("PKOSTAT_PUBLISH_URL")),
     )
 
 

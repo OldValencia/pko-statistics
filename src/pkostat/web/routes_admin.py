@@ -1,4 +1,6 @@
-"""Administration: users and category definitions."""
+"""Administration: users, their published reports, budgets and category definitions."""
+
+import sqlite3
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -8,6 +10,8 @@ from pkostat.categorize import editing
 from pkostat.db.budgets import save_budget
 from pkostat.domain import Budget
 from pkostat.errors import PkoStatError
+from pkostat.pipeline import publish_message
+from pkostat.publish.sharing import close_share, open_share
 from pkostat.users import add_user, get_user, rotate_token, set_display_name
 from pkostat.web.context import Context, category_blockers
 
@@ -55,6 +59,23 @@ def register(app: FastAPI, ctx: Context) -> None:
             rotate_token(conn, name)
             return ctx.done(conn, "Новый токен выпущен — обнови его в Shortcut.")
 
+    @app.post("/api/users/{name}/share")
+    def share(name: str) -> JSONResponse:
+        with ctx.db() as conn:
+            open_share(conn, name)
+            return ctx.done(conn, "Новая ссылка. " + _publish(ctx, conn))
+
+    @app.post("/api/users/{name}/share/delete")
+    def unshare(name: str) -> JSONResponse:
+        with ctx.db() as conn:
+            close_share(conn, name)
+            return ctx.done(conn, "Доступ по ссылке закрыт. " + _publish(ctx, conn))
+
+    @app.post("/api/publish")
+    def publish_now() -> JSONResponse:
+        with ctx.db() as conn:
+            return ctx.done(conn, "Публикация: " + _publish(ctx, conn))
+
     @app.post("/api/budgets")
     def save_plan(body: BudgetForm) -> JSONResponse:
         config = ctx.config()
@@ -98,6 +119,13 @@ def register(app: FastAPI, ctx: Context) -> None:
             )
             editing.save_categories(ctx.settings.home, categories)
             return ctx.done(conn, "Категория удалена.")
+
+
+def _publish(ctx: Context, conn: sqlite3.Connection) -> str:
+    try:
+        return publish_message(conn, ctx.settings) + "."
+    except PkoStatError as exc:
+        return f"Не опубликовано: {exc}"
 
 
 def _grosze(zl: float | None) -> int | None:

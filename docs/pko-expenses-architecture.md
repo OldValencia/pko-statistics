@@ -37,9 +37,9 @@ Supabase: notifications table                              │
 │                          ▼                                                          │
 │                  Jinja2 → reports/<user>/<period>.html  (single file, offline)      │
 └─────────────────────────────────────────────────────────────────────────────────────┘
-                           │  (later, stage 9)
+                           │  stage 9: encrypted on this PC
                            ▼
-                 publish the report to the cloud behind authentication
+                 GitHub Pages (gh-pages): one locked page per shared user
 ```
 
 **Principles:**
@@ -459,12 +459,14 @@ not rendered and the LLM receives no limit data.
 
 ```text
 ~/pkostatistics/                   (PKOSTAT_HOME)
-├── .env                           SUPABASE_URL, SUPABASE_SECRET_KEY, OLLAMA_URL, OLLAMA_MODEL
+├── .env                           SUPABASE_URL, SUPABASE_SECRET_KEY, OLLAMA_URL, OLLAMA_MODEL,
+│                                  PKOSTAT_BACKUP_DIR, PKOSTAT_PUBLISH_REMOTE, PKOSTAT_PUBLISH_URL
 ├── db/pkostat.db
 ├── categories.toml                category list and their kind (created by `init`, user-edited)
 ├── rules.toml                     merchant keys and category rules (created by `init`, user-edited)
 ├── budgets.toml                   optional
 ├── reports/<user>/*.html
+├── publish-state.json             digest and time of the last publish (§16)
 └── backups/pkostat-YYYY-MM-DD.db  pkostat backup (sqlite backup API)
 ```
 
@@ -486,6 +488,7 @@ TOML files (the app must be closed).
 ```text
 pkostat                            = pkostat serve: the local admin website on 127.0.0.1:8765
 pkostat user add|list|rotate|display-name   users, tokens, report names
+pkostat user share NAME [--off]    new link to the published report (or stop publishing it)
 pkostat sync                       Supabase → raw_notifications → delete from Supabase
 pkostat import-csv FILE --user U   iPKO statement
 pkostat rebuild [--user U]         rebuild transactions from raw input (parsing + reconciliation)
@@ -493,7 +496,8 @@ pkostat category list|set|unset    categories; per-merchant rules
 pkostat uncategorized [--user U]   merchants without a category, by money
 pkostat categorize [--user U]      LLM for unknown merchants (stage 6)
 pkostat report --user U [--open]   read-only report HTML (PKOSTAT_HOME/reports/<user>/report.html)
-pkostat run [--no-llm]             sync → rebuild → LLM merchants → LLM texts → reports → backup
+pkostat run [--no-llm]             sync → rebuild → LLM merchants → reports → publish → backup
+pkostat publish [--force]          encrypted reports to GitHub Pages, only if something changed
 pkostat backup [--list]            zip of the database and TOML files
 pkostat restore FILE               restore a backup (app closed)
 ```
@@ -533,18 +537,35 @@ tests/
 
 ---
 
-## 16. Later: report in the cloud (stage 9)
+## 16. Published report (stage 9)
 
-What is published: the *user* HTML of §11, one per user, served at a secret URL such as
-`/r/<share-id>` (Cloudflare Pages or Workers static assets).
+The second person reads her report on an iPhone, so it is published as a web page. The host is
+**GitHub Pages of this (public) repository**, branch `gh-pages`; the page is **encrypted**, because
+the repository and the site are public.
 
-- **`share_id` is not the push token.** The token lets anyone insert pushes for that user; it lives
-  in the iOS Shortcut and must not appear in a URL. Each user gets a separate random `share_id`
-  (≥ 128 bits), stored locally, rotatable from the Users page (rotation = old link stops working).
-- The link is the access: whoever has it sees the report. Acceptable for two people; if not, put
-  Cloudflare Access (email-code login) in front — no auth code on our side.
-- Publishing replaces the file at the same URL; nothing else is uploaded. The cloud never receives
-  the database.
+- **What is published:** for each user with sharing on, the *user* HTML of §11, gzipped and
+  encrypted (AES-256-GCM, key from PBKDF2-SHA256, 310 000 iterations, random salt and nonce per
+  publish), wrapped in a small page (`publish/locked.html`) that decrypts it on the device with
+  WebCrypto and `DecompressionStream`, then replaces itself with the report. Plus `index.html`
+  (empty), `robots.txt` (disallow all), `.nojekyll`. Nothing else: no database, no code.
+- **Where:** `<site>/<share_id>/`; `<site>` = `PKOSTAT_PUBLISH_URL`, or derived from a GitHub
+  `PKOSTAT_PUBLISH_REMOTE` (`https://<owner>.github.io/<repo>`).
+- **Secrets, per user, in `users`** (migration 008): `share_id` (random, 128 bits) and
+  `share_password` (random, 128 bits). Both NULL = not published. A new link (Users page,
+  `pkostat user share NAME`) replaces both; the old page disappears on the next publish.
+  `share_id` is not the push token: the token lets anyone insert pushes and lives in the Shortcut.
+- **The link carries the password in the fragment** (`…/<share_id>/#k=<password>`). Browsers never
+  send the fragment to the server; the page reads it, stores it in the device's `localStorage`,
+  and removes it from the address bar. Whoever has the link can read the report — the same as the
+  earlier plan. With a password of 128 random bits the public ciphertext cannot be guessed.
+- **Publishing** (`publish/`): render → seal → push the site as a **single fresh commit**,
+  `git push --force` to `gh-pages` (authored "PkoStat", not the PC's git user), so encrypted old
+  reports do not accumulate in history. It pushes only when something changed: a digest of the
+  plain reports, share ids, passwords and the wrapper is kept in `PKOSTAT_HOME/publish-state.json`.
+- **When:** `pkostat publish [--force]`, a step of `pkostat run`, the "Опубликовать сейчас" button
+  and every share change on the Users page; `run-publish.bat` (sync → rebuild → publish) for Task
+  Scheduler every 2 hours. While the PC is off nothing is republished; pushes wait in Supabase.
+- **Not GitHub Actions:** rebuilding in the cloud would need the database there.
 
 ---
 
@@ -606,4 +627,7 @@ What is published: the *user* HTML of §11, one per user, served at a secret URL
 | 2026-11-19 | Allegro | `Household & pets` (essential) by default, `Online marketplaces` as the switch | Owner: mostly planned bulk buys (pet food, litter, chemicals); impulse buys are the exception |
 | 2026-11-19 | Month the report opens on | The latest month, running or not (was: last complete month) | Limits, forecast and "left to spend" are about the running month |
 | 2026-11-19 | Sharing with the second user (iPhone) | A published link (stage 9), not an HTML file or PDF | iOS previews attachments with JavaScript off: the report would be blank; PDF loses interactivity |
+| 2026-11-19 | Where the report is published | GitHub Pages of this repository (made public), `gh-pages`, page encrypted on the PC (reverses "Cloudflare Pages") | No extra service; a public repository needs the page encrypted |
+| 2026-11-19 | Republishing | Local: `run-publish.bat` every 2 h, push only on change, one-commit `gh-pages` (force push) | GitHub Actions would need the database in the cloud; history of ciphertexts would only grow |
+| 2026-11-19 | Report password | Random, per user, carried in the link fragment and remembered on the device | One tap for the reader; the fragment never reaches the server |
 | 2026-11-18 | Everyday interface | Local website (FastAPI + Jinja2 + htmx on 127.0.0.1), built together with the report; CLI kept for automation (reverses "no web server" for the local side) | Typing `category set` per merchant is unusable; a browser UI needs no extra install |
