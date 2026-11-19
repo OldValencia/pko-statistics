@@ -1,0 +1,180 @@
+# PkoStat rules. Edit freely; after editing run `pkostat rebuild`.
+# Patterns are regular expressions, case-insensitive, searched anywhere in the text.
+# First matching rule wins, so put specific rules (UBER EATS) before general ones (UBER).
+# Per-merchant choices are simpler with `pkostat category set <merchant> <category>`.
+
+# Category for operations no rule recognises, by kind of operation.
+[defaults]
+atm = "Cash"
+transfer_in = "Transfers from people"
+transfer_out = "Transfers to people"
+
+# Salary and other income recognised by the transfer title.
+[[title]]
+match = "wynagrodzenie|pensja|salary"
+category = "Salary"
+kinds = ["transfer_in"]
+
+[[title]]
+match = "zwrot podatku|urz[aą]d skarbowy|\\bPIT\\b"
+category = "Other income"
+kinds = ["transfer_in"]
+
+# [[merchant]] matches the counterparty (shop, website or person). `key` merges spellings of one
+# merchant (WOLT / Wolt / Wolt 29SEP…) into one name; `category` is optional.
+
+# --- food delivery (before taxis: Uber Eats / Bolt Food are not rides) ---
+[[merchant]]
+match = "uber\\s*\\*?\\s*eats"
+key = "UBER EATS"
+category = "Food delivery"
+
+[[merchant]]
+match = "bolt\\s*food"
+key = "BOLT FOOD"
+category = "Food delivery"
+
+[[merchant]]
+match = "^wolt"
+key = "WOLT"
+category = "Food delivery"
+alternative = "Groceries"  # Wolt Market and shops: switch per operation in the app
+
+[[merchant]]
+match = "^glovo"
+key = "GLOVO"
+category = "Food delivery"
+
+[[merchant]]
+match = "pyszne"
+key = "PYSZNE"
+category = "Food delivery"
+
+# --- taxis ---
+[[merchant]]
+match = "^bolt"
+key = "BOLT"
+category = "Taxi & scooters"
+
+[[merchant]]
+match = "^(ubr\\*|uber)"
+key = "UBER"
+category = "Taxi & scooters"
+
+[[merchant]]
+match = "free\\s*now"
+key = "FREENOW"
+category = "Taxi & scooters"
+
+# --- convenience stores ---
+[[merchant]]
+match = "^[zż]abka"
+key = "ZABKA"
+category = "Convenience stores"
+
+[[merchant]]
+match = "sklep [zż]ak\\b"
+key = "ZAK"
+category = "Convenience stores"
+
+# --- groceries ---
+[[merchant]]
+match = "^lidl"
+key = "LIDL"
+category = "Groceries"
+
+[[merchant]]
+match = "biedronka"
+key = "BIEDRONKA"
+category = "Groceries"
+
+[[merchant]]
+match = "^(auchan|carrefour|kaufland|netto|dino|stokrotka|aldi|polomarket|lewiatan)"
+category = "Groceries"
+
+# --- marketplaces ---
+[[merchant]]
+match = "allegro"
+key = "ALLEGRO"
+category = "Household & pets"
+alternative = "Online marketplaces"  # mostly planned bulk buys; switch impulse ones in the app
+
+[[merchant]]
+match = "aliexpress"
+key = "ALIEXPRESS"
+category = "Online marketplaces"
+
+[[merchant]]
+match = "\\btemu\\b|amazon|shein"
+category = "Online marketplaces"
+
+# --- subscriptions ---
+[[merchant]]
+match = "youtube"
+key = "YOUTUBE PREMIUM"
+category = "Subscriptions & software"
+
+[[merchant]]
+match = "anthropic|claude"
+key = "ANTHROPIC"
+category = "Subscriptions & software"
+
+[[merchant]]
+match = "openai|chatgpt"
+key = "OPENAI"
+category = "Subscriptions & software"
+
+[[merchant]]
+match = "netflix|spotify|disney|hbo|max\\.com|1password|bitwarden|apple\\.com|icloud"
+category = "Subscriptions & software"
+
+# --- entertainment ---
+[[merchant]]
+match = "steam"
+key = "STEAM"
+category = "Entertainment & games"
+
+[[merchant]]
+match = "kinguin|helios|cinema city|multikino|ebilet|biletomat"
+category = "Entertainment & games"
+
+# --- phone & internet ---
+[[merchant]]
+match = "^(orange|play\\b|t-mobile|plus\\b|homenet|vectra|upc)"
+category = "Phone & internet"
+
+# --- transport ---
+[[merchant]]
+match = "koleo|pkp|intercity|flixbus|jakdojade|ryanair|wizz"
+category = "Public transport & travel"
+
+# --- health, beauty ---
+[[merchant]]
+match = "apteka|\\bdoz\\b|alab|diagnostyka|lux ?med|medicover|enel-med"
+category = "Health & pharmacy"
+
+[[merchant]]
+match = "rossmann|hebe|notino|super-pharm|barber|fryzjer"
+category = "Beauty & personal care"
+
+# --- clothes, sport, home, electronics ---
+[[merchant]]
+match = "zara|reserved|\\blpp\\b|half price|zalando|sinsay|h ?& ?m|\\bccc\\b|deichmann|mohito|cropp|pepco"
+category = "Clothes & shoes"
+
+[[merchant]]
+match = "intersport|decathlon|sportano|martes"
+category = "Sport"
+
+[[merchant]]
+match = "ikea|leroy ?merlin|castorama|\\bobi\\b|jysk|\\baction\\b"
+category = "Home & furniture"
+
+[[merchant]]
+match = "media ?expert|media ?markt|rtv euro|x-kom|morele|\\bmi\\.com|xiaomi"
+category = "Electronics"
+
+# --- eating out (generic words; keep last) ---
+[[merchant]]
+match = "mcdonald|\\bkfc\\b|burger king|starbucks|costa coffee|restaurac|\\brest\\.|pizz|kawiarnia|cafe|caf[eé]|cukiernia|piekarnia|kebab|bistro|sushi|ramen"
+category = "Restaurants & cafes"

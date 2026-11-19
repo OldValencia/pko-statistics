@@ -1,0 +1,6 @@
+Payment card authorization
+Amount: 273,15 PLN.
+Place: WOLT, WARSAW
+Date: 2026-11-18 02:25:10.
+
+Card no. *1234 to account no. 22..2222. 

@@ -1,0 +1,44 @@
+[project]
+name = "pkostatistics"
+version = "0.1.0"
+description = "Personal PKO BP spending analyser with a local LLM"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.165.0",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "pydantic>=2.14.3",
+    "python-dotenv>=1.2.4",
+    "tzdata>=2026.6",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+pkostat = "pkostat.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pkostat"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# The web UI is in Russian on purpose; Cyrillic letters in strings are not look-alike typos.
+ignore = ["RUF001"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Starlette nudges towards httpx2 for its TestClient; httpx works and is already a dependency.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]

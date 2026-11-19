@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PkoStat — {{ user }}</title>
+<style>
+{{ css | safe }}
+</style>
+</head>
+<body class="{{ 'user-mode' if mode == 'user' else 'admin-mode' }}">
+<header class="appbar">
+  <div class="wrap">
+    <div class="brand">PkoStat</div>
+    <nav class="nav" aria-label="Страницы">
+      <button data-page="report" aria-current="page">Отчёт</button>
+      <button data-page="transactions">Операции</button>
+      {% if mode == "admin" %}
+      <button data-page="admin" data-admin="uncategorised">Без категории<span class="count" id="uncatCount"></span></button>
+      {% for key, title in admin_pages %}
+      <button data-page="admin" data-admin="{{ key }}">{{ title }}</button>
+      {% endfor %}
+      {% endif %}
+    </nav>
+    <div class="who">
+      {% if mode == "admin" and users %}
+      <select id="userSwitch" aria-label="Пользователь">
+        {% for u in users %}<option value="{{ u.name }}"{% if u.name == current_user %} selected{% endif %}>{{ u.label }}</option>{% endfor %}
+      </select>
+      {% else %}<span class="plain">{{ user }}</span>{% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+<div id="page-report">
+  <div class="periodbar">
+    <h1 id="periodTitle"></h1>
+    <span class="stepper"><button id="prevMonth" aria-label="Предыдущий месяц">&#8249;</button><button id="nextMonth" aria-label="Следующий месяц">&#8250;</button></span>
+  </div>
+  <p class="sub" id="periodSub"></p>
+
+  <section class="card">
+    <div class="verdict">
+      <div>
+        <p class="headline" id="headline"></p>
+        <div id="headlineDelta"></div>
+        <div class="slot" id="summarySlot"><div class="tag">Итог месяца</div><p id="llmSummary"></p></div>
+      </div>
+      <div class="tiles" id="tiles"></div>
+    </div>
+  </section>
+
+  <section class="card" id="planCard" hidden>
+    <h2>План: цель и бюджеты</h2>
+    <p class="hint" id="planHint"></p>
+    <div id="goalBox"></div>
+    <div class="table-scroll"><table id="budgetTable"></table></div>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <h2>Куда ушли деньги</h2>
+      <p class="hint">Доли расходов месяца по категориям. Переводы людям не входят в расходы.</p>
+      <div class="share"><div class="chart" id="donut"></div><ul class="share-list" id="donutList"></ul></div>
+    </section>
+    <section class="card">
+      <h2>Необходимое, по желанию, импульсивное</h2>
+      <p class="hint">Как делятся расходы месяца по типу. Цель — чтобы оранжевого было меньше.</p>
+      <div class="segbar" id="segbar"></div>
+      <div class="legend" id="segLegend"></div>
+      <div class="split-notes" id="splitNotes"></div>
+    </section>
+  </div>
+
+  <div class="two">
+    <section class="card"><h2>Где проёбы</h2><p class="hint">Самая большая импульсивная категория и всё необязательное, что выросло на 15%+ к среднему за 3 месяца.</p><div id="leaks"></div></section>
+    <section class="card"><h2>Где молодец</h2><p class="hint">Необязательные траты, упавшие на 15%+ ниже среднего. Разовые крупные покупки в среднем не считаются.</p><div id="wins"></div></section>
+  </div>
+
+  <section class="card">
+    <h2>Сравнение по категориям</h2>
+    <p class="hint" id="cmpHint"></p>
+    <div class="legend" id="cmpLegend"></div>
+    <div class="table-scroll"><table id="cmpTable"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Категории по месяцам</h2>
+    <p class="hint">Каждая строка — одна категория. Чем сильнее выделена клетка, тем больше потрачено относительно других месяцев этой же категории. Клик по месяцу — открыть его отчёт.</p>
+    <div class="table-scroll"><table class="heat" id="heat"></table></div>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <h2>Расходы и доход по месяцам</h2>
+      <p class="hint">Столбцы — расходы по типам, линия — доход. Клик по столбцу — открыть месяц.</p>
+      <div class="legend" id="trendLegend"></div>
+      <div class="chart" id="trendChart"></div>
+    </section>
+    <section class="card">
+      <h2>Сальдо по месяцам</h2>
+      <p class="hint">Синий — отложено, красный — ушёл в минус. С учётом переводов людям. Текущий месяц не показан, пока не закончится.</p>
+      <div class="chart" id="netChart"></div>
+    </section>
+  </div>
+
+  <div class="two">
+    <section class="card">
+      <h2>Темп трат внутри месяца</h2>
+      <p class="hint">Накопленные расходы по дням, без аренды. Видно, когда месяц «разгоняется».</p>
+      <div class="legend" id="paceLegend"></div>
+      <div class="chart" id="paceChart"></div>
+    </section>
+    <section class="card">
+      <h2>Когда срываешься</h2>
+      <p class="hint" id="weekHint"></p>
+      <div class="chart" id="weekChart"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Топ мерчантов месяца</h2>
+    <p class="hint">Где больше всего денег и как часто.</p>
+    <div class="table-scroll"><table id="topMerchants"></table></div>
+  </section>
+
+  <div class="two">
+    <section class="card"><h2>Подписки и регулярные платежи</h2><p class="hint">Найдены сами: один мерчант, похожая сумма, раз в месяц.</p><div id="recurring"></div></section>
+    <section class="card"><h2>Рекомендации</h2><p class="hint">Где можно сэкономить и сколько — посчитано по цифрам месяца.</p>
+      <div class="slot" id="recsSlot" style="margin-top:0"><div class="tag">Рекомендации</div><div id="llmRecs"></div></div></section>
+  </div>
+
+  <section class="card" id="whatIfCard">
+    <h2>Что если</h2>
+    <p class="hint" id="whatIfHint"></p>
+    <div class="whatif"><div id="levers"></div>
+      <div class="result"><div style="color:var(--ink-2);font-size:13px">Оставалось бы в месяц</div><div class="big" id="saveMonth"></div><div id="saveYear" style="color:var(--ink-2)"></div><div id="saveRate" style="margin-top:12px;font-size:14px"></div></div>
+    </div>
+  </section>
+
+  <section class="card" id="ytdCard">
+    <h2>С начала года</h2>
+    <p class="hint" id="ytdHint"></p>
+    <div class="ytd" id="ytd"></div>
+  </section>
+
+  <section class="card"><h2>О данных</h2><ul class="notes" id="notes"></ul></section>
+</div>
+
+<div id="page-transactions" hidden>
+  <div class="periodbar"><h1>Операции</h1></div>
+  <div class="filters">
+    <select id="fMonth" aria-label="Месяц"></select>
+    <select id="fCategory" aria-label="Категория"></select>
+    <select id="fStatus" aria-label="Статус"><option value="counted">Учитываемые (проведённые и ожидающие)</option><option value="all">Все, включая заменённые копии</option></select>
+    <input id="fSearch" type="search" placeholder="Поиск по мерчанту или названию" aria-label="Поиск">
+  </div>
+  <p class="summary-line" id="txSummary"></p>
+  <div class="card table-card"><table><thead><tr><th>Дата</th><th>Мерчант</th><th>Категория</th><th class="num">Сумма</th><th class="hide-sm">Статус</th></tr></thead><tbody id="txBody"></tbody></table></div>
+</div>
+
+{% if mode == "admin" %}
+<div id="page-admin" hidden>
+  <div class="periodbar"><h1 id="adminTitle"></h1></div>
+  <div class="card admin-page" id="adminBody"></div>
+</div>
+{% endif %}
+</main>
+<div class="tooltip" id="tooltip"></div>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="data">{{ data_json | safe }}</script>
+<script>
+{{ js | safe }}
+</script>
+</body>
+</html>

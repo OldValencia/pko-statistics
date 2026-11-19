@@ -1,0 +1,6 @@
+Payment card authorization
+Amount: 141,65 PLN.
+Place: Wolt, Poland.
+Date: 2026-11-16 11:26:43.
+
+Card no. *1234 to account no. 22..2222.

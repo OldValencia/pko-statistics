@@ -1,0 +1,11 @@
+.idea
+*.iml
+.venv
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets and personal data never go into git.
+.env
+*.db
+docs/examples/

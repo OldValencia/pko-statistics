@@ -1,0 +1,13 @@
+Account credit
++50,00 PLN Przelew na telefon - odebrany
+
+Sender Account: 11..1111
+
+Sender: JANE DOE
+
+Title: PEREVOD NA TELEFON OD:
+48500000001 DO: 48500000002
+
+On account no. 22..2222
+
+Available balance: +1943,75 PLN

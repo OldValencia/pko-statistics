@@ -1,0 +1,173 @@
+# PkoStat categories. Edit freely: add, rename, remove, change kinds.
+# After editing run `pkostat rebuild`.
+#
+# kind:
+#   essential      needed to live: housing, groceries, health, commuting, phone
+#   discretionary  chosen spending: restaurants, clothes, hobbies, subscriptions
+#   impulse        habit and convenience: delivery, taxis, convenience stores, marketplaces
+#   income         money earned: salary, other income
+#   transfer       money moved between people or into cash; not spending on goods
+#   other          everything else
+#
+# label: the name shown in the app (name stays the id used by rules).
+# month_shift_from_day: paid on or after this day = counted in the next month.
+# description: what belongs here. The local LLM reads it when it sorts unknown merchants.
+
+# --- essential ---------------------------------------------------------------------------
+
+[[category]]
+name = "Rent & utilities"
+label = "Аренда и коммуналка"
+month_shift_from_day = 25
+kind = "essential"
+description = "Rent, electricity, gas, water, heating, building and housing fees."
+
+[[category]]
+name = "Groceries"
+label = "Продукты"
+kind = "essential"
+description = "Supermarkets and grocery stores: Lidl, Biedronka, Auchan, Kaufland, markets."
+
+[[category]]
+name = "Health & pharmacy"
+label = "Здоровье и аптека"
+kind = "essential"
+description = "Pharmacies, doctors, dentists, medical labs, clinics, medicines."
+
+[[category]]
+name = "Phone & internet"
+label = "Связь и интернет"
+kind = "essential"
+description = "Mobile plans, home internet, phone top-ups."
+
+[[category]]
+name = "Public transport & travel"
+label = "Транспорт и поездки"
+kind = "essential"
+description = "City transport, trains, intercity buses, tickets, flights."
+
+[[category]]
+name = "Household & pets"
+label = "Быт и питомцы"
+kind = "essential"
+description = "Planned supplies: pet food and litter, cleaning products, household chemicals, bulk buys."
+
+# --- discretionary -----------------------------------------------------------------------
+
+[[category]]
+name = "Restaurants & cafes"
+label = "Кафе и рестораны"
+kind = "discretionary"
+description = "Eating or drinking out on site: restaurants, cafes, bakeries, bars, fast food."
+
+[[category]]
+name = "Clothes & shoes"
+label = "Одежда и обувь"
+kind = "discretionary"
+description = "Clothing, shoes and accessories, online or in store."
+
+[[category]]
+name = "Home & furniture"
+label = "Дом и мебель"
+kind = "discretionary"
+description = "Furniture, home goods, DIY and hardware stores."
+
+[[category]]
+name = "Electronics"
+label = "Электроника"
+kind = "discretionary"
+description = "Electronics, gadgets, computer parts, appliances."
+
+[[category]]
+name = "Beauty & personal care"
+label = "Красота и уход"
+kind = "discretionary"
+description = "Drugstores, cosmetics, perfume, hairdressers and barbers."
+
+[[category]]
+name = "Entertainment & games"
+label = "Развлечения и игры"
+kind = "discretionary"
+description = "Games and game keys, cinema, concerts, escape rooms, events, hobbies."
+
+[[category]]
+name = "Subscriptions & software"
+label = "Подписки и софт"
+kind = "discretionary"
+description = "Recurring digital services: streaming, music, cloud storage, AI tools, apps."
+
+[[category]]
+name = "Sport"
+label = "Спорт"
+kind = "discretionary"
+description = "Sports equipment and clothing, gym, bicycles."
+
+[[category]]
+name = "Gifts & flowers"
+label = "Подарки и цветы"
+kind = "discretionary"
+description = "Presents and flowers for other people."
+
+# --- impulse -----------------------------------------------------------------------------
+
+[[category]]
+name = "Food delivery"
+label = "Доставка еды"
+kind = "impulse"
+description = "Ready food delivered home: Wolt, Glovo, Pyszne, Uber Eats, Bolt Food."
+
+[[category]]
+name = "Convenience stores"
+label = "Магазины у дома"
+kind = "impulse"
+description = "Small shops near home bought from out of convenience: Zabka, Zak, kiosks."
+
+[[category]]
+name = "Taxi & scooters"
+label = "Такси и самокаты"
+kind = "impulse"
+description = "Taxi, ride-hailing and rented scooters: Bolt, Uber, FreeNow."
+
+[[category]]
+name = "Online marketplaces"
+label = "Маркетплейсы"
+kind = "impulse"
+description = "General marketplaces with impulse buys: Allegro, AliExpress, Temu, Amazon."
+
+# --- income, transfers, other ------------------------------------------------------------
+
+[[category]]
+name = "Salary"
+label = "Зарплата"
+kind = "income"
+description = "Salary and wages from an employer."
+
+[[category]]
+name = "Other income"
+label = "Прочий доход"
+kind = "income"
+description = "Tax refunds, bonuses, sales, any income that is not salary."
+
+[[category]]
+name = "Transfers to people"
+label = "Переводы людям"
+kind = "transfer"
+description = "Money sent to other people (phone transfers, bank transfers to private persons)."
+
+[[category]]
+name = "Transfers from people"
+label = "Переводы от людей"
+kind = "transfer"
+description = "Money received from other people."
+
+[[category]]
+name = "Cash"
+label = "Наличные"
+kind = "transfer"
+description = "ATM withdrawals and cash deposits."
+
+[[category]]
+name = "Other"
+label = "Прочее"
+kind = "other"
+description = "Anything that fits no other category."
