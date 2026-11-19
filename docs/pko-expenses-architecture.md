@@ -300,7 +300,11 @@ unknown kind, unknown category, duplicate name, bad regex or a typo in a key is 
 - `rules.toml` — regexes (case-insensitive, first match wins, optional `kinds` filter):
   `[defaults]` category by operation kind (ATM, transfer in/out); `[[title]]` by transfer title
   (`Wynagrodzenie` → Salary); `[[merchant]]` by counterparty, with an optional `key` that merges
-  spellings and an optional `category`.
+  spellings and an optional `category`. Merchant rules see the counterparty without a leading
+  store number (`3091 DEALZ …` is matched as `DEALZ …`), so `^` anchors work on card payments.
+  The packaged set covers a few hundred Polish chains and international services (groceries, pharmacies,
+  clothes, utilities, city transport, subscriptions, games, hotels, pet shops, fuel stations);
+  local businesses are never put into it — the repository is public.
 
 **Merchant key** (`categorize/merchants.py`): a `[[merchant]]` rule's `key` if one matches
 (`WOLT`/`Wolt` → `WOLT`, `PayPro SA *ALLEGRO`/`allegro.pl` → `ALLEGRO`), else a generic clean-up:
@@ -629,5 +633,7 @@ the repository and the site are public.
 | 2026-11-19 | Sharing with the second user (iPhone) | A published link (stage 9), not an HTML file or PDF | iOS previews attachments with JavaScript off: the report would be blank; PDF loses interactivity |
 | 2026-11-19 | Where the report is published | GitHub Pages of this repository (made public), `gh-pages`, page encrypted on the PC (reverses "Cloudflare Pages") | No extra service; a public repository needs the page encrypted |
 | 2026-11-19 | Republishing | Local: `run-publish.bat` every 2 h, push only on change, one-commit `gh-pages` (force push) | GitHub Actions would need the database in the cloud; history of ciphertexts would only grow |
+| 2026-11-19 | Wider packaged rules | Polish chains and common services added; new category `Hotels & holidays` (discretionary); fuel stations → `Convenience stores` (no car) | The LLM is 64 % right; a known chain should never reach it |
+| 2026-11-19 | Store numbers in merchant names | Stripped before matching merchant rules, not from the stored text | `3091 DEALZ …`, `1411 ETOS …` missed `^`-anchored rules |
 | 2026-11-19 | Report password | Random, per user, carried in the link fragment and remembered on the device | One tap for the reader; the fragment never reaches the server |
 | 2026-11-18 | Everyday interface | Local website (FastAPI + Jinja2 + htmx on 127.0.0.1), built together with the report; CLI kept for automation (reverses "no web server" for the local side) | Typing `category set` per merchant is unusable; a browser UI needs no extra install |

@@ -192,12 +192,14 @@ def test_hold_never_booked_is_unmatched(db: sqlite3.Connection, tmp_path: Path) 
 def test_rebuild_assigns_merchant_keys_and_categories(db: sqlite3.Connection) -> None:
     user = add_user(db, "alice")
     _store(db, user.id, 1, CARD)
-    _store(db, user.id, 2, "Payment card authorization\nAmount: 9,00 PLN.\nPlace: 820 IDREAM, X.")
+    _store(
+        db, user.id, 2, "Payment card authorization\nAmount: 9,00 PLN.\nPlace: 820 KOMIS NOWAK, X."
+    )
 
     result = rebuild(db)
 
     rows = db.execute("SELECT merchant_key, category FROM transactions ORDER BY id").fetchall()
-    assert [tuple(row) for row in rows] == [("WOLT", "Food delivery"), ("IDREAM", None)]
+    assert [tuple(row) for row in rows] == [("WOLT", "Food delivery"), ("KOMIS NOWAK", None)]
     assert (result.counted, result.uncategorised, result.uncategorised_minor) == (2, 1, -900)
 
 

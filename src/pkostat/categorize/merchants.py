@@ -13,12 +13,16 @@ from pkostat.domain import Kind
 _URL_PREFIX = re.compile(r"^(https?://)?(www\.)?")
 _DOMAIN_SUFFIX = re.compile(r"\.(pl|com|eu|net|org|io)(/.*)?$")
 _PUNCTUATION = re.compile(r"[\"'*]")
+# Card payments often start with the store number ("3091 DEALZ ..."); rules anchored with ^ must
+# still see the name first.
+_STORE_NUMBER = re.compile(r"^\d+\s+")
 
 
 def merchant_rule_for(
     counterparty: str | None, kind: Kind, rules: list[MerchantRule]
 ) -> MerchantRule | None:
-    return next((rule for rule in rules if rule.applies(kind, counterparty)), None)
+    text = _STORE_NUMBER.sub("", counterparty) if counterparty else counterparty
+    return next((rule for rule in rules if rule.applies(kind, text)), None)
 
 
 def merchant_key(counterparty: str | None, kind: Kind, rules: list[MerchantRule]) -> str | None:

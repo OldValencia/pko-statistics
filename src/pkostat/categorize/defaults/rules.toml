@@ -66,6 +66,10 @@ match = "free\\s*now"
 key = "FREENOW"
 category = "Taxi & scooters"
 
+[[merchant]]
+match = "^(lime|dott|tier|voi|bird)\\b|itaxi|^taxi\\b|nextbike|veturilo|blinkee|hulajnog"
+category = "Taxi & scooters"
+
 # --- convenience stores ---
 [[merchant]]
 match = "^[zż]abka"
@@ -75,6 +79,15 @@ category = "Convenience stores"
 [[merchant]]
 match = "sklep [zż]ak\\b"
 key = "ZAK"
+category = "Convenience stores"
+
+[[merchant]]
+match = "^(groszek|abc|livio|odido|1minute)\\b|inmedio|relay|kiosk|^ruch\\b|intersmoker|e-?papieros|smoke ?shop|tabak"
+category = "Convenience stores"
+
+# Fuel stations: without a car these are coffee, hot dogs and snacks.
+[[merchant]]
+match = "^(orlen|bp|shell|circle ?k|moya|amic|lotos|mol)\\b"
 category = "Convenience stores"
 
 # --- groceries ---
@@ -92,6 +105,15 @@ category = "Groceries"
 match = "^(auchan|carrefour|kaufland|netto|dino|stokrotka|aldi|polomarket|lewiatan)"
 category = "Groceries"
 
+[[merchant]]
+match = "intermarch|^(mila|spar|eurospar|selgros|makro|top ?market|freshmarket)\\b|spo[lł]em|delikatesy centrum|piotr i pawe[lł]|chata polska|frisco|lisek|barbora|^jush|e\\.?leclerc|^leclerc"
+category = "Groceries"
+
+# Before the marketplaces: Amazon Prime is a subscription, not a purchase.
+[[merchant]]
+match = "amazon ?prime|prime ?video|primevideo"
+category = "Subscriptions & software"
+
 # --- marketplaces ---
 [[merchant]]
 match = "allegro"
@@ -106,6 +128,10 @@ category = "Online marketplaces"
 
 [[merchant]]
 match = "\\btemu\\b|amazon|shein"
+category = "Online marketplaces"
+
+[[merchant]]
+match = "^olx\\b|ebay|etsy|wish\\.com|joom|empik ?place|^ceneo"
 category = "Online marketplaces"
 
 # --- subscriptions ---
@@ -128,6 +154,15 @@ category = "Subscriptions & software"
 match = "netflix|spotify|disney|hbo|max\\.com|1password|bitwarden|apple\\.com|icloud"
 category = "Subscriptions & software"
 
+# Game subscriptions before game shops (MICROSOFT*XBOX GAME PASS).
+[[merchant]]
+match = "game ?pass|ps ?plus|playstation ?plus|nintendo switch online|ea ?play\\b|ubisoft ?\\+"
+category = "Subscriptions & software"
+
+[[merchant]]
+match = "google ?\\*? ?(one|storage|workspace)|microsoft ?\\*? ?(365|office|onedrive)|office ?365|dropbox|notion|canva|adobe|figma|github|jetbrains|proton|nordvpn|surfshark|expressvpn|mullvad|tidal|deezer|audible|storytel|legimi|empik ?go|bookbeat|duolingo|babbel|linkedin|patreon|crunchyroll|twitch|discord|viaplay|skyshowtime|player\\.pl|polsat ?box ?go|canal ?\\+|wikimedia|chess\\.com|strava|headspace|telegram|chatgpt|perplexity|midjourney|cursor"
+category = "Subscriptions & software"
+
 # --- entertainment ---
 [[merchant]]
 match = "steam"
@@ -138,15 +173,42 @@ category = "Entertainment & games"
 match = "kinguin|helios|cinema city|multikino|ebilet|biletomat"
 category = "Entertainment & games"
 
+[[merchant]]
+match = "empik|gamivo|\\bg2a\\b|eneba|instant-?gaming|humble ?bundle|epic ?games|gog\\.com|playstation|\\bpsn\\b|xbox|nintendo|riot ?games|blizzard|battle\\.net|ubisoft|electronic arts|bilety24|going\\.|kupbilecik|ticketmaster|eventim|teatr|filharmoni|muzeum|escape ?room|bowling|kr[eę]gielni|trampolin|\\bkino\\b"
+category = "Entertainment & games"
+
 # --- phone & internet ---
 [[merchant]]
 match = "^(orange|play\\b|t-mobile|plus\\b|homenet|vectra|upc)"
 category = "Phone & internet"
 
+[[merchant]]
+match = "^(heyah|nju|virgin mobile|lycamobile|netia|inea|toya|multimedia polska|polsat box|aero2)\\b"
+category = "Phone & internet"
+
+# --- rent and utilities (often bank transfers to the company) ---
+[[merchant]]
+match = "^(pge|tauron|enea|energa|e\\.on|innogy|pgnig|fortum|veolia|mpec|mpwik)\\b|polskie g[oó]rnictwo|wodoci[aą]gi|spo[lł]dzielnia mieszkaniowa|wsp[oó]lnota mieszkaniowa"
+category = "Rent & utilities"
+
 # --- transport ---
 [[merchant]]
 match = "koleo|pkp|intercity|flixbus|jakdojade|ryanair|wizz"
 category = "Public transport & travel"
+
+[[merchant]]
+match = "^(mpk|ztm|zkm|mzk|bkm|skm|wkd)\\b|skycash|mobilet|mobiparking|e-?podr[oó][zż]nik|polregio|koleje|^lot\\b|polskie linie lotnicze|easyjet|lufthansa|norwegian|airbaltic|blablacar|neobus|sindbad|leo ?express|regiojet|flixtrain|parking|parkomat"
+category = "Public transport & travel"
+
+# --- hotels and holidays ---
+[[merchant]]
+match = "booking\\.com|airbnb|hotels\\.com|trivago|agoda|expedia|hostel|\\bhotel\\b|nocowanie|itaka|\\btui\\b|rainbow tours|coral travel|wakacje\\.pl|esky|kiwi\\.com"
+category = "Hotels & holidays"
+
+# --- parcels and post ---
+[[merchant]]
+match = "inpost|paczkomat|poczta polska|\\bdpd\\b|\\bdhl\\b|orlen paczka|\\bups\\b|fedex|gls\\b"
+category = "Other"
 
 # --- health, beauty ---
 [[merchant]]
@@ -157,9 +219,21 @@ category = "Health & pharmacy"
 match = "rossmann|hebe|notino|super-pharm|barber|fryzjer"
 category = "Beauty & personal care"
 
+[[merchant]]
+match = "^(gemini|ziko|cefarm|melissa)\\b|dr\\.? ?max|synevo|centrum medyczne|stomatolog|dentyst|przychodni|szpital|optyk|vision express|okulary|krambo"
+category = "Health & pharmacy"
+
+[[merchant]]
+match = "^(natura|douglas|sephora|inglot|yves rocher|ziaja|dm)\\b|drogeri|kosmetyk|perfumeri|manicure|paznok|salon (fryzjer|kosmet|urody|pi[eę]kno)"
+category = "Beauty & personal care"
+
 # --- clothes, sport, home, electronics ---
 [[merchant]]
 match = "zara|reserved|\\blpp\\b|half price|zalando|sinsay|h ?& ?m|\\bccc\\b|deichmann|mohito|cropp|pepco"
+category = "Clothes & shoes"
+
+[[merchant]]
+match = "answear|modivo|eobuwie|^etos\\b|^house\\b|bershka|pull ?& ?bear|stradivarius|massimo dutti|^medicine\\b|diverse|wittchen|tk ?maxx|primark|new yorker|kappahl|vistula|^kik\\b|vinted|guess|levi'?s|nike|adidas|puma\\b|new balance|ochnik|born2be|renee"
 category = "Clothes & shoes"
 
 [[merchant]]
@@ -167,12 +241,39 @@ match = "intersport|decathlon|sportano|martes"
 category = "Sport"
 
 [[merchant]]
+match = "^4f\\b|go ?sport|zdrofit|city ?fit|mcfit|calypso|just ?gym|fitness|\\bgym\\b|si[lł]owni|\\bbasen|aquapark|multisport|benefit systems|rowerow"
+category = "Sport"
+
+# Pets and planned household supplies.
+[[merchant]]
+match = "zooplus|kakadu|maxi ?zoo|zoo ?karina|krakvet|apetete|zoologiczn|weterynar|\\bvet\\b|pet ?shop"
+category = "Household & pets"
+
+[[merchant]]
 match = "ikea|leroy ?merlin|castorama|\\bobi\\b|jysk|\\baction\\b"
+category = "Home & furniture"
+
+[[merchant]]
+match = "^(agata|homla|duka|tedi|dealz|abra|komfort|psb|mr[oó]wka)\\b|black red white|^brw\\b|home ?& ?you|bricomarch"
 category = "Home & furniture"
 
 [[merchant]]
 match = "media ?expert|media ?markt|rtv euro|x-kom|morele|\\bmi\\.com|xiaomi"
 category = "Electronics"
+
+[[merchant]]
+match = "neonet|komputronik|avans|electro\\.pl|sferis|idream|istore|cortland|samsung|apple store"
+category = "Electronics"
+
+# --- gifts and flowers ---
+[[merchant]]
+match = "kwiaciarni|kwiaty|bukieciarni|poczta kwiatowa|florist|^apart\\b|w\\.? ?kruk|^yes\\b|pandora|swarovski"
+category = "Gifts & flowers"
+
+# --- eating out: chains (generic words come last) ---
+[[merchant]]
+match = "popeyes|pizza hut|subway|north ?fish|sphinx|bobby burger|max premium|salad story|thai wok|manekin|da grasso|telepizza|domino'?s|green caff|columbus|tchibo|bubble ?tea|\\blody\\b|gelat|wedel|bar mleczny|food ?truck|pizzeria|burger"
+category = "Restaurants & cafes"
 
 # --- eating out (generic words; keep last) ---
 [[merchant]]

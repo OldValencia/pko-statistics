@@ -72,7 +72,19 @@ def _categorize(
         ("LIDL DLUGA", "LIDL", "Groceries"),
         ("Apteka Pod Lipami 02", "APTEKA POD LIPAMI", "Health & pharmacy"),
         ("KAWIARNIA POD ZEGAREM", "KAWIARNIA POD ZEGAREM", "Restaurants & cafes"),
-        ("820 IDREAM", "IDREAM", None),
+        ("820 IDREAM", "IDREAM", "Electronics"),
+        ("3091 DEALZ GDANSK", "DEALZ GDANSK", "Home & furniture"),  # store number first
+        ("123 LIDL DLUGA", "LIDL", "Groceries"),
+        ("AMAZON PRIME", "AMAZON PRIME", "Subscriptions & software"),  # before marketplaces
+        ("AMAZON.PL", "AMAZON", "Online marketplaces"),
+        ("MICROSOFT*XBOX GAME PASS", "MICROSOFT XBOX GAME PASS", "Subscriptions & software"),
+        ("PLAYSTATION NETWORK", "PLAYSTATION NETWORK", "Entertainment & games"),
+        ("Booking.com", "BOOKING", "Hotels & holidays"),
+        ("MAXI ZOO 12", "MAXI ZOO", "Household & pets"),
+        ("PGE OBROT S.A.", "PGE OBROT S.A", "Rent & utilities"),
+        ("ORLEN STACJA NR 1", "ORLEN STACJA NR", "Convenience stores"),
+        ("InPost Paczkomaty", "INPOST PACZKOMATY", "Other"),
+        ("COFFEE HOUSE", "COFFEE HOUSE", None),  # "House" the brand only at the start
     ],
 )
 def test_default_rules(
@@ -125,19 +137,19 @@ def test_precedence(config: CategoryConfig) -> None:
     rent = _tx("JANE LANDLORD", Kind.TRANSFER_OUT)
     manual = {"JANE LANDLORD": StoredRule("Rent & utilities", "manual")}
     llm_wolt = {"WOLT": StoredRule("Groceries", "llm")}
-    llm_unknown = {"IDREAM": StoredRule("Electronics", "llm")}
+    llm_unknown = {"KOMIS NOWAK": StoredRule("Electronics", "llm")}
 
     assert _categorize(config, rent, manual)[1] == "Rent & utilities"  # manual beats defaults
     assert _categorize(config, _tx("WOLT"), llm_wolt)[1] == "Food delivery"  # rules beat llm
-    assert _categorize(config, _tx("820 IDREAM"), llm_unknown)[1] == "Electronics"
+    assert _categorize(config, _tx("820 KOMIS NOWAK"), llm_unknown)[1] == "Electronics"
     override = {("csv", 7): "Groceries"}
     assert _categorize(config, _tx("WOLT"), manual, override)[1] == "Groceries"
 
 
 def test_stale_stored_category_is_ignored(config: CategoryConfig) -> None:
-    stored = {"IDREAM": StoredRule("Removed category", "manual")}
+    stored = {"KOMIS NOWAK": StoredRule("Removed category", "manual")}
 
-    assert _categorize(config, _tx("820 IDREAM"), stored)[1] is None
+    assert _categorize(config, _tx("820 KOMIS NOWAK"), stored)[1] is None
 
 
 def test_user_files_win(tmp_path: Path) -> None:

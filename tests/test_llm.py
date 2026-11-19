@@ -88,14 +88,14 @@ def _push(db: sqlite3.Connection, user_id: int, remote_id: int, place: str, amou
 
 def test_suggestions_are_stored_not_applied(db: sqlite3.Connection) -> None:
     user = add_user(db, "alice")
-    _push(db, user.id, 1, "GASTRONOMIA FEDLER", "12,00")
-    _push(db, user.id, 2, "ORLEN STACJA NR 757", "200,00")
+    _push(db, user.id, 1, "GASTRONOMIA KOWAL", "12,00")
+    _push(db, user.id, 2, "SKLEP PHU NOWAK 757", "200,00")
     _push(db, user.id, 3, "WOLT", "50,00")  # known by rules: an example, not a question
     config = load_category_config()
     rebuild(db, None, config)
     model = FakeModel({"items": [
-        {"merchant": "GASTRONOMIA FEDLER", "category": "Restaurants & cafes", "confidence": 0.9},
-        {"merchant": "ORLEN STACJA NR", "category": "Other", "confidence": 0.9},
+        {"merchant": "GASTRONOMIA KOWAL", "category": "Restaurants & cafes", "confidence": 0.9},
+        {"merchant": "SKLEP PHU NOWAK", "category": "Other", "confidence": 0.9},
         {"merchant": "INVENTED", "category": "Groceries", "confidence": 1.0},
     ]})  # fmt: skip
 
@@ -103,8 +103,8 @@ def test_suggestions_are_stored_not_applied(db: sqlite3.Connection) -> None:
 
     assert (result.asked, result.confident, result.unsure) == (2, 1, 1)
     assert {k: (s.category, s.confidence) for k, s in list_suggestions(db).items()} == {
-        "GASTRONOMIA FEDLER": ("Restaurants & cafes", 0.9),
-        "ORLEN STACJA NR": ("Other", 0.9),
+        "GASTRONOMIA KOWAL": ("Restaurants & cafes", 0.9),
+        "SKLEP PHU NOWAK": ("Other", 0.9),
     }
     assert stored_rules(db) == {}  # nothing applied without the owner
     rebuild(db, None, config)
@@ -112,4 +112,4 @@ def test_suggestions_are_stored_not_applied(db: sqlite3.Connection) -> None:
     system, question = model.questions[0]
     assert "WOLT -> Food delivery" in system  # the owner's taxonomy as examples
     assert model.thinking == "medium"
-    assert json.loads(question)[0]["merchant"] == "ORLEN STACJA NR"  # biggest first
+    assert json.loads(question)[0]["merchant"] == "SKLEP PHU NOWAK"  # biggest first

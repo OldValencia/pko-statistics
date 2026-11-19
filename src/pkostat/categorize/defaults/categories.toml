@@ -108,6 +108,12 @@ label = "Подарки и цветы"
 kind = "discretionary"
 description = "Presents and flowers for other people."
 
+[[category]]
+name = "Hotels & holidays"
+label = "Отели и отдых"
+kind = "discretionary"
+description = "Accommodation and holidays: Booking.com, Airbnb, hotels, hostels, tour operators."
+
 # --- impulse -----------------------------------------------------------------------------
 
 [[category]]
